@@ -301,21 +301,25 @@ async function extractFrames() {
   });
 }
 
-// Extract frames only on desktop — mobile uses direct video seeking
-if (isFinePointerDevice) {
+const heroMediaEls = document.querySelectorAll(".hero-media");
+const heroOverlayEl = document.querySelector(".hero-overlay");
+const maskTextEl = document.getElementById("maskText");
+const heroMaskEl = document.getElementById("heroMask");
+const vw = window.innerWidth;
+const startSize = Math.max(60, Math.min(vw * 0.12, 180));
+const endSize = Math.max(800, vw * 1.8);
+
+// Set initial mask text size so full word is visible on any screen
+if (maskTextEl) maskTextEl.setAttribute("font-size", startSize);
+
+if (!reduceMotion && isFinePointerDevice) {
+  /* =======================================================
+     DESKTOP HERO — full scroll-scrub with frame extraction
+     ======================================================= */
   extractFrames().then(() => {
     console.log(`[Orobrick] Extracted ${extractedFrames.length} video frames`);
   });
-} else if (heroVideo) {
-  // Mobile: pause and preload video for scroll-seeking
-  heroVideo.pause();
-  heroVideo.load();
-}
 
-const heroMediaEls = document.querySelectorAll(".hero-media");
-const heroOverlayEl = document.querySelector(".hero-overlay");
-
-if (!reduceMotion) {
   if (heroMediaEls.length) gsap.set(heroMediaEls, { opacity: 1, scale: 1.0 });
   if (heroOverlayEl) gsap.set(heroOverlayEl, { opacity: 0 });
 
@@ -331,39 +335,18 @@ if (!reduceMotion) {
       scrub: 2.5,
       anticipatePin: 1,
       onUpdate: (self) => {
-        const p = self.progress;
-        if (isFinePointerDevice) {
-          // Desktop: draw extracted frame to canvas
-          drawFrameAtProgress(p);
-        } else if (heroVideo) {
-          // Mobile: seek video directly (simpler, lighter)
-          const dur = heroVideo.duration;
-          if (dur && !isNaN(dur)) {
-            heroVideo.currentTime = Math.min(p * dur, dur - 0.01);
-          }
-        }
+        drawFrameAtProgress(self.progress);
       },
     },
   });
 
-  const maskTextEl = document.getElementById("maskText");
-  const heroMaskEl = document.getElementById("heroMask");
-
-  // Phase 1 (0–35%): OROBRICK mask text scales up → cutout grows → video revealed
-  // Start size is responsive: ~12% of viewport width so full word fits on mobile
-  const vw = window.innerWidth;
-  const startSize = Math.max(60, Math.min(vw * 0.12, 180));
-  const endSize = Math.max(800, vw * 1.8);
   if (maskTextEl) {
-    maskTextEl.setAttribute("font-size", startSize);
     tl.fromTo(maskTextEl,
       { attr: { "font-size": startSize } },
       { attr: { "font-size": endSize }, duration: ZOOM_PHASE, ease: "power1.inOut" },
       0.0
     );
   }
-
-  // Once cutout is huge, fade the entire SVG mask away
   if (heroMaskEl) {
     tl.fromTo(heroMaskEl,
       { opacity: 1 },
@@ -371,9 +354,6 @@ if (!reduceMotion) {
       ZOOM_PHASE - 0.05
     );
   }
-
-  // Smooth zoom-in on the video across the ENTIRE scroll — 1.0 → 1.25
-  // power2.inOut gives a slow-start, slow-end feel (cinematic breath)
   if (heroMediaEls.length) {
     tl.fromTo(heroMediaEls,
       { scale: 1.0 },
@@ -381,8 +361,6 @@ if (!reduceMotion) {
       0.0
     );
   }
-
-  // Subtle scrim fades in near the end so headline reads clearly
   if (heroOverlayEl) {
     tl.fromTo(heroOverlayEl,
       { opacity: 0 },
@@ -391,7 +369,6 @@ if (!reduceMotion) {
     );
   }
 
-  // Words cycle through the middle of the scroll (40%–78%)
   const wordsStart = 0.40;
   const wordsEnd = 0.78;
   const wordWindow = (wordsEnd - wordsStart) / heroWords.length;
@@ -410,10 +387,71 @@ if (!reduceMotion) {
     );
   });
 
-  // Headline + CTAs reveal at 82%
   tl.to(heroContent, { opacity: 1, y: 0, duration: 0.14, ease: "power2.out" }, 0.82);
 
+} else if (!reduceMotion) {
+  /* =======================================================
+     MOBILE HERO — lightweight, no video scrubbing
+     Video autoplays as background. Simple pin with mask zoom
+     and content fade-in. No per-frame seeking = butter smooth.
+     ======================================================= */
+  if (heroVideo) {
+    heroVideo.play().catch(() => {});
+  }
+  if (heroMediaEls.length) gsap.set(heroMediaEls, { opacity: 1, scale: 1.0 });
+  if (heroOverlayEl) gsap.set(heroOverlayEl, { opacity: 0.3 });
+
+  const ZOOM_PHASE_M = 0.45;
+
+  const tlm = gsap.timeline({
+    scrollTrigger: {
+      trigger: ".hero",
+      start: "top top",
+      end: "+=200%",
+      pin: true,
+      pinSpacing: true,
+      scrub: 0.8,
+      anticipatePin: 1,
+    },
+  });
+
+  // Mask text zoom — same cutout effect, shorter duration
+  if (maskTextEl) {
+    tlm.fromTo(maskTextEl,
+      { attr: { "font-size": startSize } },
+      { attr: { "font-size": endSize }, duration: ZOOM_PHASE_M, ease: "power2.inOut" },
+      0.0
+    );
+  }
+  if (heroMaskEl) {
+    tlm.fromTo(heroMaskEl,
+      { opacity: 1 },
+      { opacity: 0, duration: 0.08, ease: "power2.out" },
+      ZOOM_PHASE_M - 0.08
+    );
+  }
+
+  // Gentle zoom on the video
+  if (heroMediaEls.length) {
+    tlm.fromTo(heroMediaEls,
+      { scale: 1.0 },
+      { scale: 1.1, duration: 1.0, ease: "power1.out" },
+      0.0
+    );
+  }
+
+  // Scrim + content reveal
+  if (heroOverlayEl) {
+    tlm.fromTo(heroOverlayEl,
+      { opacity: 0.3 },
+      { opacity: 0.65, duration: 0.2, ease: "power2.out" },
+      0.6
+    );
+  }
+  tlm.to(heroContent, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.7);
+
 } else {
+  // Reduced motion: show everything immediately
   if (heroMark) heroMark.style.opacity = 0;
   heroContent.style.opacity = 1;
   heroContent.style.transform = "none";
