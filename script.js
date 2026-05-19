@@ -395,7 +395,10 @@ if (!reduceMotion && isFinePointerDevice) {
      Video autoplays as background. Simple pin with mask zoom
      and content fade-in. No per-frame seeking = butter smooth.
      ======================================================= */
+  // Loop video so it always has motion when scrolling back
   if (heroVideo) {
+    heroVideo.loop = true;
+    heroVideo.playbackRate = 0.6; // Slow cinematic pace
     heroVideo.play().catch(() => {});
   }
   if (heroMediaEls.length) gsap.set(heroMediaEls, { opacity: 1, scale: 1.0 });
