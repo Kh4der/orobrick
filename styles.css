@@ -1672,21 +1672,20 @@ a.contact-chip:hover {
   .services .container::before,
   .services .container::after { width: 40px; }
 
-  /* --- Process: vertical timeline with glowing left rail --- */
-  .process-track { padding-left: var(--gutter); }
-  .process-steps {
-    grid-template-columns: 1fr;
-    gap: 0;
-    padding-left: 28px;
+  /* --- Process: vertical timeline ---
+     All positions relative to .process-track container.
+     Rail at left:8px. Dot 14px wide, centered on rail = left:1px.
+     Step text at padding-left:32px to clear the dot. */
+  .process-track {
     position: relative;
+    padding-left: 0;
+    margin-inline: var(--gutter);
   }
-  /* Vertical rail line */
   .process-rail {
     display: block;
     position: absolute;
     top: 0; bottom: 0;
-    left: calc(var(--gutter) + 7px);
-    right: auto;
+    left: 8px; right: auto;
     width: 2px;
     height: 100%;
   }
@@ -1697,19 +1696,26 @@ a.contact-chip:hover {
   }
   .process-rail-fill::after {
     right: auto; top: auto;
-    bottom: -6px; left: -5px;
+    bottom: -5px; left: -4px;
+    width: 10px; height: 10px;
+  }
+  .process-steps {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-left: 32px;
+    padding-right: 0;
   }
   .process-step {
-    padding: 1.5rem 0 1.5rem 0;
-    border-left: none;
-    margin-left: 0;
+    padding: 1.2rem 0;
+    position: relative;
   }
   .process-dot {
     position: absolute;
-    top: 1.6rem; left: -35px;
-    width: 16px; height: 16px;
+    top: 1.4rem;
+    left: -31px;
+    width: 14px; height: 14px;
   }
-  /* Active steps glow on mobile too */
+  .process-step-num { margin-top: 0; }
   .process-step h3 { opacity: 0.5; }
   .process-step p { opacity: 0.35; }
   .process-step.is-active h3 { opacity: 1; }
