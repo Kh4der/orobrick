@@ -1,0 +1,10 @@
+# Backup/original video files
+*.original.mp4
+
+# Large video files (served separately or via CDN)
+assets/gallery/Untitled video (1)_Precise_Starlight_2_5_hyp_2.mp4
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

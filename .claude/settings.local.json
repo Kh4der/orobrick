@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__mcp-registry__search_mcp_registry",
+      "mcp__mcp-registry__list_connectors",
+      "mcp__5288250f-f32e-4dc8-b6c5-832fd39974dc__whoami",
+      "WebSearch",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/.claude/skills/ui-ux-pro-max/SKILL.md\" -o \"d:/orobrick/.claude/skills/ui-ux-pro-max.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/saifyxpro/ui-ux-design-pro-skill/main/.claude/skills/ui-ux-design-pro/SKILL.md\" -o \"d:/orobrick/.claude/skills/ui-ux-design-pro.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/anthropics/skills/main/skills/frontend-design/SKILL.md\" -o \"d:/orobrick/.claude/skills/frontend-design.md\")",
+      "Bash(curl -sL \"https://gist.githubusercontent.com/majidmanzarpour/8b95e5e0e78d7eeacd3ee54606c7acc6/raw\" -o \"d:/orobrick/.claude/skills/elite-frontend-ux.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/travisvn/awesome-claude-skills/main/README.md\" -o \"d:/orobrick/.claude/skills/awesome-claude-skills.md\")",
+      "Bash(wc -l d:/orobrick/.claude/skills/*.md)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/saifyxpro/ui-ux-design-pro-skill/main/SKILL.md\" -o \"d:/orobrick/.claude/skills/ui-ux-design-pro.md\")",
+      "Bash(curl -sL \"https://api.github.com/repos/saifyxpro/ui-ux-design-pro-skill/git/trees/main?recursive=1\")",
+      "Bash(curl -sL \"https://api.github.com/repos/saifyxpro/ui-ux-design-pro-skill/contents/\")",
+      "Bash(curl -sI \"https://raw.githubusercontent.com/saifyxpro/ui-ux-design-pro-skill/main/README.md\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/saifyxpro/ui-ux-design-pro-skill/main/README.md\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(x['path']\\) for x in d.get\\('tree',[]\\)]\")",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/saifyxpro/ui-ux-design-pro-skill/main/CLAUDE.md\" -o \"d:/orobrick/.claude/skills/ui-ux-design-pro.md\")",
+      "Bash(python serve.py)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5173/\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} %{size_download}\" \"http://localhost:5173/assets/gallery/Untitled%20video%20\\(1\\)_Precise_Starlight_2_5_hyp_2.mp4\" -r 0-1000)",
+      "Bash(python faststart.py \"assets/gallery/Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.mp4\" \"assets/gallery/Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.faststart.mp4\")",
+      "Bash(mv \"Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.mp4\" \"Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.original.mp4\")",
+      "Bash(mv \"Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.faststart.mp4\" \"Untitled video \\(1\\)_Precise_Starlight_2_5_hyp_2.mp4\")",
+      "Bash(python serve.py 5173)",
+      "Bash(python faststart.py \"assets/gallery/vedio.mp4\" \"assets/gallery/vedio.faststart.mp4\")",
+      "Bash(mv vedio.mp4 vedio.original.mp4)",
+      "Bash(mv vedio.faststart.mp4 vedio.mp4)",
+      "Bash(start python:*)",
+      "Bash(start http://localhost:5173)",
+      "Bash(start http://localhost:5173/#contact)"
+    ]
+  }
+}

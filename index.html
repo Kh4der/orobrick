@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Orobrick — Interior construction and remodeling. Floors, walls, paint, doors, windows, ceilings, cabinets and bathrooms. Built from the inside out." />
+  <meta name="theme-color" content="#1f1c1a" />
+  <title>Orobrick — Built from the Inside Out</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.css" />
+  <link rel="stylesheet" href="https://unpkg.com/splitting/dist/splitting.css" />
+  <link rel="stylesheet" href="styles.css?v=29" />
+</head>
+<body>
+
+  <!-- Fluid scroll-driven WebGL background — sits behind all sections -->
+  <canvas id="bgFluid" class="bg-fluid" aria-hidden="true"></canvas>
+
+  <!-- Page-wide liquid pointer trail — full-viewport fixed WebGL canvas
+       that renders gold wave ripples wherever the cursor moves -->
+  <canvas id="pageLiquid" class="page-liquid" aria-hidden="true"></canvas>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <span class="loader-mark">O</span>
+      <span class="loader-text" data-splitting>OROBRICK</span>
+      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="nav" id="nav">
+    <a href="#home" class="nav-logo">
+      <span class="nav-mark">◳</span>
+      <span class="nav-name">OROBRICK</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#home">Home</a>
+      <a href="#services">Services</a>
+      <a href="#process">Process</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a href="#contact" class="nav-cta">Get an Estimate</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main>
+    <!-- 1. HERO -->
+    <section class="hero" id="home" data-bg-theme="dark">
+      <!-- Hidden video source — frames are extracted at load time -->
+      <video
+        id="heroVideo"
+        src="assets/gallery/Untitled video (1)_Precise_Starlight_2_5_hyp_2.original.mp4"
+        muted
+        playsinline
+        preload="auto"
+        style="display:none"
+      ></video>
+      <!-- Canvas renders extracted frames on scroll for smooth scrubbing -->
+      <canvas
+        id="heroFrameCanvas"
+        class="hero-media"
+        aria-hidden="true"
+      ></canvas>
+
+      <!-- Scrim for text readability over the full-bleed video -->
+      <div class="hero-overlay"></div>
+
+      <!-- WebGL liquid-displacement layer: video rippled by wave-equation
+           simulation, driven by mouse motion like a stick through water -->
+      <canvas id="heroLiquid" class="hero-liquid" aria-hidden="true"></canvas>
+
+      <!-- SVG mask: dark scrim with OROBRICK-shaped cutout.
+           Video shows THROUGH the text. As scroll progresses, the text
+           scales up until the cutout fills the viewport. -->
+      <svg class="hero-mask" id="heroMask" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <mask id="oroCutout" maskUnits="userSpaceOnUse">
+            <rect width="100%" height="100%" fill="white"/>
+            <text id="maskText"
+                  x="50%" y="50%"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                  fill="black"
+                  font-family="Fraunces, serif"
+                  font-weight="400"
+                  font-size="180"
+                  letter-spacing="-4">OROBRICK</text>
+          </mask>
+        </defs>
+        <rect width="100%" height="100%" fill="#1f1c1a" mask="url(#oroCutout)" />
+      </svg>
+
+      <div class="hero-words" id="heroWords">
+        <span class="hero-word">Floors</span>
+        <span class="hero-word">Walls</span>
+        <span class="hero-word">Paint</span>
+        <span class="hero-word">Doors</span>
+        <span class="hero-word">Windows</span>
+        <span class="hero-word">Ceilings</span>
+        <span class="hero-word">Cabinets</span>
+        <span class="hero-word">Bathrooms</span>
+        <span class="hero-word accent">Built Beautifully</span>
+      </div>
+
+      <div class="hero-content">
+        <p class="eyebrow">Interior Construction · Remodeling · Finishing</p>
+        <h1 class="hero-title" data-splitting>Orobrick Builds Beautiful Interiors</h1>
+        <p class="hero-sub">From floors and walls to cabinets, ceilings, doors, windows, and bathrooms — we transform unfinished spaces into polished, livable interiors.</p>
+        <div class="hero-ctas">
+          <a href="#contact" class="btn btn-primary" data-magnetic data-cursor="hover">Get a Free Estimate <span class="btn-arrow">→</span></a>
+          <a href="#services" class="btn btn-ghost" data-magnetic data-cursor="hover">View Our Services</a>
+        </div>
+      </div>
+
+      <div class="hero-scroll">
+        <span>Scroll</span>
+        <div class="hero-scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- 2. SERVICES -->
+    <section class="services" id="services" data-bg-theme="cream">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">02 — Services</p>
+          <h2 class="section-title" data-splitting>Interior Construction &amp; Remodeling Services</h2>
+          <p class="section-sub">Every surface, every detail. One trusted team for the work that turns a house into a finished home.</p>
+        </div>
+
+        <div class="services-grid">
+          <article class="service-card" data-reveal>
+            <div class="service-num">01</div>
+            <div class="service-icon">▭</div>
+            <h3>Flooring Installation</h3>
+            <p>Hardwood, engineered, luxury vinyl, laminate and tile — laid level, tight and built to last.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">02</div>
+            <div class="service-icon">▥</div>
+            <h3>Wall Construction &amp; Finishing</h3>
+            <p>Framing, drywall, taping and finishing for crisp, perfectly flat walls ready for paint.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">03</div>
+            <div class="service-icon">◐</div>
+            <h3>Interior Painting</h3>
+            <p>Clean lines, premium finishes and colors that bring every room to life.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">04</div>
+            <div class="service-icon">▯</div>
+            <h3>Door Installation</h3>
+            <p>Interior and entry doors fitted square, sealed and finished with care.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">05</div>
+            <div class="service-icon">◫</div>
+            <h3>Window Installation</h3>
+            <p>Replacement and new-build windows that fit perfectly and look beautiful inside and out.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">06</div>
+            <div class="service-icon">▤</div>
+            <h3>Ceiling Work</h3>
+            <p>Smooth, coffered or accented ceilings — finished cleanly and lit beautifully.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">07</div>
+            <div class="service-icon">▦</div>
+            <h3>Kitchen Cabinets</h3>
+            <p>Custom and stock cabinetry, installed level and tight with a flawless finish.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">08</div>
+            <div class="service-icon">◇</div>
+            <h3>Bathroom Remodeling</h3>
+            <p>Tile, vanities, lighting and layout — full bathroom transformations done right.</p>
+          </article>
+
+          <article class="service-card" data-reveal>
+            <div class="service-num">09</div>
+            <div class="service-icon">◉</div>
+            <h3>Bathroom Fixtures &amp; Equipment</h3>
+            <p>Tubs, showers, toilets, sinks and faucets — installed clean, sealed and reliable.</p>
+          </article>
+
+          <article class="service-card service-card-wide" data-reveal>
+            <div class="service-num">10</div>
+            <div class="service-icon">◈</div>
+            <h3>Trim, Molding &amp; Final Finishing</h3>
+            <p>Baseboards, crown molding, casings and the small details that make a space feel complete.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. TRANSFORMATION / PROCESS -->
+    <section class="process" id="process" data-bg-theme="warm">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">03 — Process</p>
+          <h2 class="section-title" data-splitting>From Empty Space to Finished Home</h2>
+          <p class="section-sub">A clear five-step path. No surprises, no mess left behind.</p>
+        </div>
+      </div>
+
+      <div class="process-track" id="processTrack">
+        <div class="process-rail">
+          <div class="process-rail-fill" id="processRailFill"></div>
+        </div>
+
+        <div class="process-steps">
+          <article class="process-step">
+            <div class="process-dot"></div>
+            <p class="process-step-num">Step 01</p>
+            <h3>Plan the Space</h3>
+            <p>We walk the space with you, measure, listen and map out exactly what your interior needs.</p>
+          </article>
+
+          <article class="process-step">
+            <div class="process-dot"></div>
+            <p class="process-step-num">Step 02</p>
+            <h3>Build the Foundation of the Interior</h3>
+            <p>Framing, prep and surface work — the unseen craftsmanship that everything else relies on.</p>
+          </article>
+
+          <article class="process-step">
+            <div class="process-dot"></div>
+            <p class="process-step-num">Step 03</p>
+            <h3>Install Floors, Walls, Doors &amp; Windows</h3>
+            <p>The shell of every finished room comes together — square, sealed and beautifully aligned.</p>
+          </article>
+
+          <article class="process-step">
+            <div class="process-dot"></div>
+            <p class="process-step-num">Step 04</p>
+            <h3>Finish Cabinets, Bathrooms &amp; Ceilings</h3>
+            <p>The rooms that define daily life are built, tiled, painted and detailed to perfection.</p>
+          </article>
+
+          <article class="process-step">
+            <div class="process-dot"></div>
+            <p class="process-step-num">Step 05</p>
+            <h3>Final Touches &amp; Clean Delivery</h3>
+            <p>Trim, molding, polish and a spotless handoff. You walk into a home that&rsquo;s ready to live in.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. WHY CHOOSE OROBRICK -->
+    <section class="why" id="why" data-bg-theme="dark">
+      <div class="container">
+        <div class="why-grid">
+          <div class="why-head">
+            <p class="eyebrow">04 — Why Orobrick</p>
+            <h2 class="section-title" data-splitting>Built with Precision. Finished with Care.</h2>
+            <p class="section-sub">Six promises we deliver on every project, on every visit, until the keys are back in your hands.</p>
+          </div>
+
+          <div class="why-list">
+            <div class="why-item" data-reveal>
+              <span class="why-num">01</span>
+              <h3>Clean &amp; Professional Work</h3>
+              <p>Tidy job sites. Respectful crews. Protected floors and surfaces from day one.</p>
+            </div>
+            <div class="why-item" data-reveal>
+              <span class="why-num">02</span>
+              <h3>High-Quality Finishing</h3>
+              <p>The seams, edges and final details executed at a level you can feel.</p>
+            </div>
+            <div class="why-item" data-reveal>
+              <span class="why-num">03</span>
+              <h3>Reliable Communication</h3>
+              <p>You always know what we&rsquo;re doing today, what&rsquo;s next, and what it costs.</p>
+            </div>
+            <div class="why-item" data-reveal>
+              <span class="why-num">04</span>
+              <h3>One Trusted Team</h3>
+              <p>Flooring, cabinets, bathrooms, ceilings, doors and windows — all under one roof.</p>
+            </div>
+            <div class="why-item" data-reveal>
+              <span class="why-num">05</span>
+              <h3>Design-Focused Execution</h3>
+              <p>Modern, considered choices that elevate the space without inflating the budget.</p>
+            </div>
+            <div class="why-item" data-reveal>
+              <span class="why-num">06</span>
+              <h3>Customer-First Remodeling</h3>
+              <p>Your home, your timeline, your standards. We adapt — and we deliver.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. GALLERY -->
+    <section class="gallery" id="gallery" data-bg-theme="cream">
+      <div class="container">
+        <div class="section-head">
+          <p class="eyebrow">05 — Featured Work</p>
+          <h2 class="section-title" data-splitting>Recent Interiors</h2>
+          <p class="section-sub">A small selection of completed remodels. Real spaces, real craft.</p>
+        </div>
+
+        <div class="gallery-grid">
+          <figure class="gallery-item gallery-item-tall" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=1200&q=80"
+              data-asset="assets/gallery/flooring.jpg"
+              alt="Modern hardwood flooring installation" loading="lazy" />
+            <figcaption>
+              <span>Modern Flooring</span>
+              <small>White oak engineered hardwood</small>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1616594039964-ae9021a400a0?auto=format&fit=crop&w=1200&q=80"
+              data-asset="assets/gallery/walls.jpg"
+              alt="Warm painted walls in modern interior" loading="lazy" />
+            <figcaption>
+              <span>Painted Walls</span>
+              <small>Warm neutral palette</small>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=1200&q=80"
+              data-asset="assets/gallery/kitchen.jpg"
+              alt="Custom kitchen cabinets" loading="lazy" />
+            <figcaption>
+              <span>Kitchen Cabinets</span>
+              <small>Full custom installation</small>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item gallery-item-wide" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?auto=format&fit=crop&w=1600&q=80"
+              data-asset="assets/gallery/bathroom.jpg"
+              alt="Remodeled modern bathroom" loading="lazy" />
+            <figcaption>
+              <span>Bathroom Remodel</span>
+              <small>Tile, vanity and fixtures</small>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1600210492493-0946911123ea?auto=format&fit=crop&w=1200&q=80"
+              data-asset="assets/gallery/ceiling.jpg"
+              alt="Modern ceiling finish with recessed lighting" loading="lazy" />
+            <figcaption>
+              <span>Ceiling Finish</span>
+              <small>Recessed and softly lit</small>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-item gallery-item-wide" data-reveal>
+            <img class="gallery-img"
+              src="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=1600&q=80"
+              data-asset="assets/gallery/doors.jpg"
+              alt="Interior door and window installation" loading="lazy" />
+            <figcaption>
+              <span>Door &amp; Window Install</span>
+              <small>Trim, casing and seal</small>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ABOUT -->
+    <section class="about" id="about" data-bg-theme="warm">
+      <div class="container about-grid">
+        <div class="about-visual" data-reveal>
+          <img class="about-img"
+            src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80"
+            data-asset="assets/about/craft.jpg"
+            alt="Orobrick interior craftsmanship" loading="lazy" />
+          <div class="about-tag">
+            <span>15+ yrs</span>
+            <small>Interior craftsmanship</small>
+          </div>
+        </div>
+        <div class="about-copy">
+          <p class="eyebrow">06 — About Orobrick</p>
+          <h2 class="section-title" data-splitting>Interior Craftsmanship for Modern Homes</h2>
+          <p>Orobrick helps homeowners upgrade, finish, and remodel their interiors with care and precision. Whether you need new flooring, fresh walls, beautiful paint, installed doors and windows, custom cabinets, ceiling work, or a complete bathroom remodel, our team brings every detail together into a clean and finished space.</p>
+          <ul class="about-bullets">
+            <li><span>◦</span> Licensed and insured interior remodeling crew</li>
+            <li><span>◦</span> Single point of contact through your entire project</li>
+            <li><span>◦</span> Transparent quotes &mdash; no surprises mid-project</li>
+            <li><span>◦</span> Premium finishes at honest price points</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CTA -->
+    <section class="cta" data-bg-theme="dark">
+      <div class="container cta-inner">
+        <p class="eyebrow eyebrow-light">Let&rsquo;s build it together</p>
+        <h2 class="cta-title" data-splitting>Ready to Transform Your Interior?</h2>
+        <p class="cta-sub">Tell us what you want to build, remodel, or finish. Orobrick will help bring your space together beautifully.</p>
+        <div class="cta-buttons">
+          <a href="#contact" class="btn btn-gold">Request a Quote <span class="btn-arrow">→</span></a>
+          <a href="https://wa.me/917858609286?text=Hi%20Orobrick%2C%20I%E2%80%99m%20interested%20in%20a%20remodeling%20project" class="btn btn-whatsapp" target="_blank" rel="noopener" data-magnetic>
+            <svg class="wa-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Chat on WhatsApp
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. CONTACT — immersive full-bleed section -->
+    <section class="contact" id="contact" data-bg-theme="dark">
+
+      <!-- Full-page worker background -->
+      <div class="contact-bg">
+        <img src="assets/gallery/companymain.png"
+             alt="" aria-hidden="true" class="contact-bg-img" loading="lazy" />
+        <div class="contact-bg-overlay"></div>
+      </div>
+
+      <div class="container contact-hero">
+
+        <!-- Left: headline + quick-reach -->
+        <div class="contact-intro" data-reveal>
+          <p class="eyebrow eyebrow-light">08 — Let's Build</p>
+          <h2 class="contact-headline" data-splitting>Start your project.</h2>
+          <p class="contact-tagline">You bring the vision. We bring the craft, the crew, and the commitment to get it done right.</p>
+
+          <div class="contact-reach">
+            <a href="https://wa.me/917858609286?text=Hi%20Orobrick%2C%20I%E2%80%99m%20interested%20in%20a%20remodeling%20project"
+               class="contact-wa-btn" target="_blank" rel="noopener">
+              <span class="contact-wa-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              </span>
+              <span class="contact-wa-text">
+                <strong>Chat on WhatsApp</strong>
+                <small>+91 78586 09286 &middot; replies in minutes</small>
+              </span>
+            </a>
+
+            <div class="contact-meta-row">
+              <a href="mailto:hello@orobrick.com" class="contact-chip">
+                <span>hello@orobrick.com</span>
+              </a>
+              <span class="contact-chip">
+                <span>Mon &ndash; Sat &middot; 8 AM &ndash; 6 PM</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: glassmorphism form card -->
+        <form class="contact-form" id="contactForm" novalidate data-reveal>
+          <div class="contact-form-head">
+            <h3>Send us your details</h3>
+            <p>We'll get back within one business day.</p>
+          </div>
+          <div class="field">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required placeholder="Your full name" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" placeholder="(000) 000-0000" />
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required placeholder="you@example.com" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="project">Project Type</label>
+            <div class="select-wrap">
+              <select id="project" name="project" required>
+                <option value="">Select a project type</option>
+                <option>Flooring</option>
+                <option>Painting</option>
+                <option>Doors</option>
+                <option>Windows</option>
+                <option>Ceiling</option>
+                <option>Kitchen Cabinets</option>
+                <option>Bathroom Remodeling</option>
+                <option>Full Interior Finishing</option>
+                <option>Other</option>
+              </select>
+              <span class="select-arrow">▾</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" placeholder="Tell us about the space, the rooms involved, and what you'd like done."></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold btn-full">Send Inquiry <span class="btn-arrow">→</span></button>
+          <p class="form-status" id="formStatus" aria-live="polite"></p>
+        </form>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <span class="nav-mark">◳</span>
+        <span class="footer-name">OROBRICK</span>
+        <p class="footer-tag">Built from the Inside Out.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sitemap</h4>
+        <a href="#services">Services</a>
+        <a href="#process">Process</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="#services">Flooring</a>
+        <a href="#services">Painting &amp; Walls</a>
+        <a href="#services">Kitchens</a>
+        <a href="#services">Bathrooms</a>
+        <a href="#services">Doors &amp; Windows</a>
+      </div>
+      <div class="footer-col">
+        <h4>Reach Us</h4>
+        <a href="https://wa.me/917858609286?text=Hi%20Orobrick" target="_blank" rel="noopener">WhatsApp · +91 78586 09286</a>
+        <a href="mailto:hello@orobrick.com">hello@orobrick.com</a>
+        <p>Mon &ndash; Sat · 8 &ndash; 6</p>
+      </div>
+    </div>
+    <div class="footer-bar container">
+      <p>&copy; <span id="year"></span> Orobrick. All rights reserved.</p>
+      <p>Crafted with care for finished interiors.</p>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp bubble — fixed bottom-right, always accessible -->
+  <a href="https://wa.me/917858609286?text=Hi%20Orobrick%2C%20I%E2%80%99m%20interested%20in%20a%20remodeling%20project"
+     class="wa-fab" id="waFab" target="_blank" rel="noopener"
+     aria-label="Chat on WhatsApp">
+    <span class="wa-fab-pulse"></span>
+    <span class="wa-fab-pulse wa-fab-pulse-2"></span>
+    <span class="wa-fab-icon">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </span>
+    <span class="wa-fab-label">Chat with us</span>
+  </a>
+
+  <!-- Scripts: CDN libraries (top UI/UX stack) -->
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
+  <script type="module" src="script.js?v=56"></script>
+</body>
+</html>
