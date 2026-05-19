@@ -1653,9 +1653,15 @@ a.contact-chip:hover {
     opacity: 1;
   }
   .nav-cta { display: none; }
+  .nav-logo {
+    font-size: 0.82rem;
+    letter-spacing: 0.15em;
+    gap: 0.4rem;
+  }
+  .nav-mark { width: 24px; height: 24px; font-size: 0.95rem; }
   .nav-toggle {
     display: flex;
-    width: 44px; height: 44px; /* 44px minimum for mobile tap target */
+    width: 44px; height: 44px;
   }
   .nav.is-solid + main .hero-content { padding-bottom: 4rem; }
 
@@ -1769,6 +1775,7 @@ a.contact-chip:hover {
 
 /* --- Ultra-small screens (iPhone SE, older phones) --- */
 @media (max-width: 380px) {
+  .nav-name { display: none; } /* just show the mark on tiny screens */
   .hero-title { font-size: 1.8rem; }
   .hero-sub { font-size: 0.9rem; }
   .btn { padding: 0.85rem 1.2rem; font-size: 0.88rem; }
