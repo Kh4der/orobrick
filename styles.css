@@ -64,9 +64,30 @@ html {
   z-index: -10;
   pointer-events: none;
   display: block;
-  opacity: 0; /* Hidden from view, but still renders for pageLiquid to use as texture */
+  opacity: 0;
 }
 body { background: transparent; }
+
+/* CSS-only animated gradient for mobile (replaces WebGL bgFluid) */
+@media (hover: none), (pointer: coarse) {
+  .bg-fluid { display: none; }
+  body {
+    background:
+      linear-gradient(135deg,
+        var(--bg-deep) 0%,
+        #2a2318 25%,
+        var(--bg-warm) 50%,
+        #2a2318 75%,
+        var(--bg-deep) 100%);
+    background-size: 400% 400%;
+    animation: mobileGradient 20s ease infinite;
+  }
+}
+@keyframes mobileGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
@@ -1582,23 +1603,32 @@ a.contact-chip:hover {
   .service-card-wide { flex: 0 0 420px; }
   .process-steps { grid-template-columns: repeat(3, minmax(200px, 1fr)); gap: 2rem 1.5rem; }
   .process-rail { display: none; }
-  .process-step h3, .process-step p { opacity: 1; }
-  .process-step-num { color: var(--ink-mute); }
+  /* Still allow JS to control opacity via is-active on tablet */
   .why-grid { grid-template-columns: 1fr; }
   .gallery-grid { grid-template-columns: repeat(2, 1fr); }
   .gallery-item-wide { grid-column: span 2; }
   .about-grid { grid-template-columns: 1fr; }
   .contact-hero { grid-template-columns: 1fr; }
-  .contact-bg-img { height: 80%; opacity: 0.2; }
+  .contact-bg-img { height: 90%; opacity: 0.25; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 720px) {
   /* --- Nav: bigger tap targets, safe area, scrollable menu --- */
   .nav {
-    padding: 1rem var(--gutter);
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
+    padding: 0.8rem var(--gutter);
+    padding-left: max(0.8rem, env(safe-area-inset-left));
+    padding-right: max(0.8rem, env(safe-area-inset-right));
+    mix-blend-mode: normal;
+    background: rgba(31, 28, 26, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(244, 237, 224, 0.08);
+  }
+  .nav.is-solid {
+    background: rgba(243, 237, 226, 0.92);
+    color: var(--ink);
+    border-bottom-color: var(--ink-line);
   }
   .nav-links {
     position: fixed; inset: 64px 0 0 0;
@@ -1642,17 +1672,49 @@ a.contact-chip:hover {
   .services .container::before,
   .services .container::after { width: 40px; }
 
-  /* --- Process: vertical layout with left line --- */
-  .process-steps { grid-template-columns: 1fr; gap: 2rem; }
-  .process-step {
-    padding-top: 0;
-    padding-left: 36px;
-    border-left: 2px solid var(--ink-line);
-    margin-left: 8px;
+  /* --- Process: vertical timeline with glowing left rail --- */
+  .process-track { padding-left: var(--gutter); }
+  .process-steps {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-left: 28px;
+    position: relative;
   }
-  .process-step.is-active { border-left-color: var(--gold); }
-  .process-dot { top: 4px; left: -10px; width: 16px; height: 16px; }
-  .process-step h3, .process-step p { opacity: 1; }
+  /* Vertical rail line */
+  .process-rail {
+    display: block;
+    position: absolute;
+    top: 0; bottom: 0;
+    left: calc(var(--gutter) + 7px);
+    right: auto;
+    width: 2px;
+    height: 100%;
+  }
+  .process-rail-fill {
+    width: 100%;
+    height: 0%;
+    transform-origin: top;
+  }
+  .process-rail-fill::after {
+    right: auto; top: auto;
+    bottom: -6px; left: -5px;
+  }
+  .process-step {
+    padding: 1.5rem 0 1.5rem 0;
+    border-left: none;
+    margin-left: 0;
+  }
+  .process-dot {
+    position: absolute;
+    top: 1.6rem; left: -35px;
+    width: 16px; height: 16px;
+  }
+  /* Active steps glow on mobile too */
+  .process-step h3 { opacity: 0.5; }
+  .process-step p { opacity: 0.35; }
+  .process-step.is-active h3 { opacity: 1; }
+  .process-step.is-active p { opacity: 1; }
+  .process-step.is-active .process-step-num { color: var(--gold-deep); }
 
   /* --- Gallery --- */
   .gallery-grid {
@@ -1665,7 +1727,17 @@ a.contact-chip:hover {
   .why-list { grid-template-columns: 1fr; }
 
   /* --- Contact --- */
-  .contact-bg-img { height: 45%; opacity: 0.12; }
+  /* Worker visible on mobile — centered at bottom, behind the form */
+  .contact-bg-img {
+    height: auto;
+    width: 75%;
+    max-width: 320px;
+    right: 50%;
+    transform: translateX(50%);
+    opacity: 0.2;
+    mix-blend-mode: normal;
+    filter: contrast(1.05) brightness(0.7);
+  }
   .contact-headline { font-size: clamp(2rem, 7vw, 3rem); }
   .contact-wa-btn { flex-direction: column; text-align: center; gap: 0.6rem; }
   .contact-meta-row { flex-direction: column; }

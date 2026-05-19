@@ -575,9 +575,15 @@ if (processSection && railFill && processSteps.length) {
     });
   }
 
-  function setRailWidth(pct) {
-    // Calculate position so the fill ends at the center of the active dot
-    railFill.style.width = `${pct}%`;
+  // Responsive: vertical rail on mobile uses height, horizontal uses width
+  const isMobileLayout = window.innerWidth <= 720;
+  function setRailFill(pct) {
+    if (isMobileLayout) {
+      railFill.style.width = "100%";
+      railFill.style.height = `${pct}%`;
+    } else {
+      railFill.style.width = `${pct}%`;
+    }
   }
 
   // Scroll-driven: light travels along the rail
@@ -593,7 +599,7 @@ if (processSection && railFill && processSteps.length) {
         Math.floor(p * processSteps.length),
         processSteps.length - 1
       );
-      setRailWidth(p * 100);
+      setRailFill(p * 100);
 
       if (activeIdx !== currentActiveIdx) {
         currentActiveIdx = activeIdx;
@@ -609,7 +615,9 @@ if (processSection && railFill && processSteps.length) {
     step.addEventListener("mouseenter", () => {
       isHovering = true;
       const pct = ((i + 0.5) / processSteps.length) * 100;
-      gsap.to(railFill, { width: `${pct}%`, duration: 0.6, ease: "power2.out" });
+      const prop = isMobileLayout ? "height" : "width";
+      gsap.to(railFill, { [prop]: `${pct}%`, duration: 0.6, ease: "power2.out" });
+      if (isMobileLayout) railFill.style.width = "100%";
       activateStep(i, true);
     });
 
