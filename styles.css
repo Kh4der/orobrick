@@ -434,6 +434,9 @@ ul { list-style: none; }
   width: 28px; height: 28px;
   font-size: 1.1rem;
   color: var(--gold);
+  overflow: hidden;
+  line-height: 1;
+  flex-shrink: 0;
 }
 .nav-links {
   display: flex; gap: 2rem;
@@ -1641,11 +1644,13 @@ a.contact-chip:hover {
     color: var(--ink);
     border-top: 1px solid var(--ink-line);
     transform: translateY(-110%);
-    transition: transform .45s var(--ease);
+    visibility: hidden;
+    transition: transform .45s var(--ease), visibility .45s;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    z-index: 99;
   }
-  .nav-links.is-open { transform: translateY(0); }
+  .nav-links.is-open { transform: translateY(0); visibility: visible; }
   .nav-links a {
     padding: 1.1rem 0;
     border-bottom: 1px solid var(--ink-line);
