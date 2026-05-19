@@ -9,30 +9,33 @@ import { initHeroLiquid } from "./heroLiquid.js";
 import { initPageLiquid } from "./pageLiquid.js";
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const isFinePointerDevice = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 
-// Boot the fluid WebGL background as early as possible.
-initBgFluid({ speed: 0.18, grain: 0.045 });
-
-// Hero liquid: video rippled by wave-equation simulation under the cursor.
-// Page liquid: full-viewport gold ripples following the cursor on every section.
-window.addEventListener("DOMContentLoaded", () => {
-  initHeroLiquid({
-    canvasId: "heroLiquid",
-    videoId: "heroFrameCanvas",
-    heroSelector: ".hero",
+// WebGL effects only on desktop — skip on mobile for battery + performance
+if (isFinePointerDevice) {
+  initBgFluid({ speed: 0.18, grain: 0.045 });
+  window.addEventListener("DOMContentLoaded", () => {
+    initHeroLiquid({
+      canvasId: "heroLiquid",
+      videoId: "heroFrameCanvas",
+      heroSelector: ".hero",
+    });
+    initPageLiquid({ canvasId: "pageLiquid" });
   });
-  initPageLiquid({ canvasId: "pageLiquid" });
-});
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* ---------------------------------------------------------
    1. Splitting (mask-friendly char/word splits)
+   Skip on touch devices to reduce DOM node count + layout thrashing
    --------------------------------------------------------- */
-Splitting();
-document.querySelectorAll("[data-splitting] .char").forEach((c, i) => {
-  c.style.setProperty("--char-index", i);
-});
+if (isFinePointerDevice) {
+  Splitting();
+  document.querySelectorAll("[data-splitting] .char").forEach((c, i) => {
+    c.style.setProperty("--char-index", i);
+  });
+}
 
 /* ---------------------------------------------------------
    2. Loader
@@ -263,8 +266,8 @@ async function extractFrames() {
         }, { once: true });
 
       } else {
-        // Fallback: seek at 60fps intervals for maximum density
-        const FPS = 60;
+        // Fallback: seek at fixed intervals (lower on mobile to avoid UI freeze)
+        const FPS = isFinePointerDevice ? 60 : 24;
         const totalFrames = Math.ceil(dur * FPS);
         let i = 0;
 
@@ -298,10 +301,16 @@ async function extractFrames() {
   });
 }
 
-// Start extracting frames immediately
-extractFrames().then(() => {
-  console.log(`[Orobrick] Extracted ${extractedFrames.length} video frames`);
-});
+// Extract frames only on desktop — mobile uses direct video seeking
+if (isFinePointerDevice) {
+  extractFrames().then(() => {
+    console.log(`[Orobrick] Extracted ${extractedFrames.length} video frames`);
+  });
+} else if (heroVideo) {
+  // Mobile: pause and preload video for scroll-seeking
+  heroVideo.pause();
+  heroVideo.load();
+}
 
 const heroMediaEls = document.querySelectorAll(".hero-media");
 const heroOverlayEl = document.querySelector(".hero-overlay");
@@ -323,8 +332,16 @@ if (!reduceMotion) {
       anticipatePin: 1,
       onUpdate: (self) => {
         const p = self.progress;
-        // Draw the correct video frame for this scroll position
-        drawFrameAtProgress(p);
+        if (isFinePointerDevice) {
+          // Desktop: draw extracted frame to canvas
+          drawFrameAtProgress(p);
+        } else if (heroVideo) {
+          // Mobile: seek video directly (simpler, lighter)
+          const dur = heroVideo.duration;
+          if (dur && !isNaN(dur)) {
+            heroVideo.currentTime = Math.min(p * dur, dur - 0.01);
+          }
+        }
       },
     },
   });
