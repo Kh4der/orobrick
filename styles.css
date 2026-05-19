@@ -1726,17 +1726,34 @@ a.contact-chip:hover {
   /* --- Why --- */
   .why-list { grid-template-columns: 1fr; }
 
-  /* --- Contact: worker visible on mobile --- */
+  /* --- Contact: worker peeks above the form on mobile --- */
+  .contact-bg {
+    position: relative;
+    z-index: auto;
+    height: 220px;
+    margin-bottom: -40px;
+  }
   .contact-bg-img {
-    height: auto;
-    width: 80%;
-    max-width: 340px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    opacity: 0.4;
+    position: relative;
+    bottom: auto; right: auto;
+    display: block;
+    height: 260px;
+    width: auto;
+    max-width: 100%;
+    margin: 0 auto;
+    opacity: 1;
     mix-blend-mode: normal;
     filter: none;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+  .contact-bg-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(22,20,15,0) 0%, rgba(22,20,15,0.95) 85%);
+  }
+  .contact {
+    flex-direction: column;
+    padding-top: 0;
   }
   .contact-headline { font-size: clamp(2rem, 7vw, 3rem); }
   .contact-wa-btn { flex-direction: column; text-align: center; gap: 0.6rem; }
