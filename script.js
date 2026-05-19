@@ -395,11 +395,24 @@ if (!reduceMotion && isFinePointerDevice) {
      Video autoplays as background. Simple pin with mask zoom
      and content fade-in. No per-frame seeking = butter smooth.
      ======================================================= */
-  // Loop video so it always has motion when scrolling back
+  // Loop video so it always has motion. Watchdog restarts if it stalls.
   if (heroVideo) {
     heroVideo.loop = true;
-    heroVideo.playbackRate = 0.6; // Slow cinematic pace
+    heroVideo.playbackRate = 0.6;
     heroVideo.play().catch(() => {});
+    // Restart on pause/stall — mobile browsers sometimes pause background video
+    heroVideo.addEventListener("pause", () => {
+      heroVideo.play().catch(() => {});
+    });
+    heroVideo.addEventListener("stalled", () => {
+      heroVideo.play().catch(() => {});
+    });
+    // Periodic check every 3s — if somehow stopped, restart
+    setInterval(() => {
+      if (heroVideo.paused && document.visibilityState === "visible") {
+        heroVideo.play().catch(() => {});
+      }
+    }, 3000);
   }
   if (heroMediaEls.length) gsap.set(heroMediaEls, { opacity: 1, scale: 1.0 });
   if (heroOverlayEl) gsap.set(heroOverlayEl, { opacity: 0.3 });
@@ -514,36 +527,65 @@ revealOnScroll(
 );
 
 /* ---------------------------------------------------------
-   7. Section title char reveals (replay each time the title
-      enters the viewport — scroll down OR scroll back up).
+   7. Section title reveals
+   Desktop: staggered per-char animation (Splitting.js)
+   Mobile: whole-title fade+slide (no Splitting = no .char nodes)
    --------------------------------------------------------- */
 const titleEls = Array.from(
-  document.querySelectorAll(".section-title[data-splitting], .cta-title[data-splitting]")
+  document.querySelectorAll(".section-title[data-splitting], .cta-title[data-splitting], .contact-headline[data-splitting]")
 );
-titleEls.forEach((title) => {
-  gsap.set(title.querySelectorAll(".char"), { opacity: 0, y: 18 });
-});
-revealOnScroll(
-  titleEls,
-  (title) => {
-    gsap.to(title.querySelectorAll(".char"), {
-      opacity: 1, y: 0,
-      duration: 0.8,
-      ease: "power3.out",
-      stagger: 0.015,
-      overwrite: "auto",
-    });
-  },
-  (title) => {
-    gsap.to(title.querySelectorAll(".char"), {
-      opacity: 0, y: 18,
-      duration: 0.3,
-      ease: "power2.in",
-      stagger: 0.005,
-      overwrite: "auto",
-    });
-  }
-);
+
+if (isFinePointerDevice) {
+  // Desktop: per-char stagger
+  titleEls.forEach((title) => {
+    gsap.set(title.querySelectorAll(".char"), { opacity: 0, y: 18 });
+  });
+  revealOnScroll(
+    titleEls,
+    (title) => {
+      gsap.to(title.querySelectorAll(".char"), {
+        opacity: 1, y: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.015,
+        overwrite: "auto",
+      });
+    },
+    (title) => {
+      gsap.to(title.querySelectorAll(".char"), {
+        opacity: 0, y: 18,
+        duration: 0.3,
+        ease: "power2.in",
+        stagger: 0.005,
+        overwrite: "auto",
+      });
+    }
+  );
+} else {
+  // Mobile: whole-title fade + slide
+  titleEls.forEach((title) => {
+    gsap.set(title, { opacity: 0, y: 30 });
+  });
+  revealOnScroll(
+    titleEls,
+    (title) => {
+      gsap.to(title, {
+        opacity: 1, y: 0,
+        duration: 0.7,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+    },
+    (title) => {
+      gsap.to(title, {
+        opacity: 0, y: 30,
+        duration: 0.3,
+        ease: "power2.in",
+        overwrite: "auto",
+      });
+    }
+  );
+}
 
 /* ---------------------------------------------------------
    8. Process — glowing timeline with interactive steps

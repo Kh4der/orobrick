@@ -1726,17 +1726,17 @@ a.contact-chip:hover {
   /* --- Why --- */
   .why-list { grid-template-columns: 1fr; }
 
-  /* --- Contact --- */
-  /* Worker visible on mobile — centered at bottom, behind the form */
+  /* --- Contact: worker visible on mobile --- */
   .contact-bg-img {
     height: auto;
-    width: 75%;
-    max-width: 320px;
-    right: 50%;
-    transform: translateX(50%);
-    opacity: 0.2;
+    width: 80%;
+    max-width: 340px;
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    opacity: 0.4;
     mix-blend-mode: normal;
-    filter: contrast(1.05) brightness(0.7);
+    filter: none;
   }
   .contact-headline { font-size: clamp(2rem, 7vw, 3rem); }
   .contact-wa-btn { flex-direction: column; text-align: center; gap: 0.6rem; }
