@@ -999,6 +999,160 @@ if (isFinePointer && !reduceMotion) {
 }
 
 /* ---------------------------------------------------------
+   12b. Language switcher — hand-written dictionary i18n
+   Loads /i18n/<lang>.json on demand, walks every [data-i18n]
+   and [data-i18n-attr="attrName:key"] element and rewrites
+   text/attribute values. Persists choice in localStorage.
+
+   Splitting.js note: data-splitting headings are wrapped in
+   per-char <span class="char"> at boot. Any text rewrite
+   destroys that structure. We snapshot the original English
+   text first, flatten when applying any dictionary, and
+   re-run Splitting on English so the per-char reveal works
+   again. Other languages keep flat text (no reveal stagger
+   but text is fully readable).
+   --------------------------------------------------------- */
+(function initLangSwitch() {
+  const root = document.getElementById("langSwitch");
+  const toggle = document.getElementById("langToggle");
+  const menu = document.getElementById("langMenu");
+  const current = document.getElementById("langCurrent");
+  if (!root || !toggle || !menu || !current) return;
+
+  const STORAGE_KEY = "orobrick-lang";
+  const LABELS = { en: "EN", es: "ES", ar: "AR" };
+  const SUPPORTED = ["en", "es", "ar"];
+  const dictCache = {};
+
+  // Snapshot the original English text of every splitting element so
+  // we can flatten the per-char structure cleanly on any toggle.
+  const origText = new WeakMap();
+  function snapshotSplittingText() {
+    document.querySelectorAll("[data-splitting]").forEach((el) => {
+      if (!origText.has(el)) origText.set(el, el.textContent.trim());
+    });
+  }
+  function flattenSplitting() {
+    document.querySelectorAll("[data-splitting]").forEach((el) => {
+      const orig = origText.get(el);
+      if (orig != null) el.textContent = orig;
+    });
+  }
+  function reSplit() {
+    if (typeof Splitting !== "function") return;
+    Splitting();
+    document.querySelectorAll("[data-splitting] .char").forEach((c, i) => {
+      c.style.setProperty("--char-index", i);
+    });
+  }
+
+  async function loadDict(lang) {
+    if (dictCache[lang]) return dictCache[lang];
+    const res = await fetch(`i18n/${lang}.json`, { cache: "force-cache" });
+    if (!res.ok) throw new Error(`Failed to load i18n/${lang}.json`);
+    const dict = await res.json();
+    dictCache[lang] = dict;
+    return dict;
+  }
+
+  function applyDict(dict) {
+    // Text content: <el data-i18n="key">…</el>
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      const val = dict[key];
+      if (typeof val === "string") el.textContent = val;
+    });
+    // Attribute values: <el data-i18n-attr="placeholder:key,aria-label:key2">
+    document.querySelectorAll("[data-i18n-attr]").forEach((el) => {
+      const spec = el.getAttribute("data-i18n-attr");
+      spec.split(",").forEach((pair) => {
+        const [attr, key] = pair.split(":").map((s) => s.trim());
+        if (!attr || !key) return;
+        const val = dict[key];
+        if (typeof val === "string") el.setAttribute(attr, val);
+      });
+    });
+  }
+
+  function setOpen(open) {
+    root.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+  }
+  function readSaved() {
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      return SUPPORTED.indexOf(v) !== -1 ? v : "en";
+    } catch (_) { return "en"; }
+  }
+  function writeSaved(lang) {
+    try { localStorage.setItem(STORAGE_KEY, lang); } catch (_) {}
+  }
+  function paintActive(lang) {
+    current.textContent = LABELS[lang] || lang.toUpperCase();
+    // Sync active state across BOTH the desktop dropdown buttons and
+    // the in-menu mobile language pills.
+    document.querySelectorAll("button[data-lang]").forEach((b) => {
+      b.classList.toggle("is-active", b.dataset.lang === lang);
+    });
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }
+
+  async function setLanguage(lang) {
+    if (SUPPORTED.indexOf(lang) === -1) lang = "en";
+    paintActive(lang);
+    writeSaved(lang);
+
+    // Always flatten the splitting heading structure first so the
+    // dictionary write hits whole text nodes, not per-char spans.
+    flattenSplitting();
+
+    try {
+      const dict = await loadDict(lang);
+      applyDict(dict);
+    } catch (err) {
+      console.warn("[Orobrick i18n]", err);
+    }
+
+    // Restore per-char reveal animations only for English.
+    if (lang === "en") {
+      setTimeout(reSplit, 50);
+    }
+  }
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    setOpen(!root.classList.contains("is-open"));
+  });
+  // Document-wide delegation: ANY button[data-lang] (desktop dropdown
+  // OR mobile in-menu pill) triggers a language change.
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-lang]");
+    if (btn) {
+      setLanguage(btn.dataset.lang);
+      setOpen(false);
+      document.getElementById("navLinks")?.classList.remove("is-open");
+      return;
+    }
+    // Close the desktop dropdown if clicking outside it.
+    if (!root.contains(e.target)) setOpen(false);
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && root.classList.contains("is-open")) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  // Snapshot the original (English) splitting text before anyone
+  // mutates it, then restore the saved language.
+  snapshotSplittingText();
+  const saved = readSaved();
+  paintActive(saved);
+  if (saved !== "en") setLanguage(saved);
+})();
+
+/* ---------------------------------------------------------
    13. Year
    --------------------------------------------------------- */
 document.getElementById("year").textContent = new Date().getFullYear();
