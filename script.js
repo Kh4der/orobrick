@@ -350,10 +350,15 @@ if (!reduceMotion) {
   const heroMaskEl = document.getElementById("heroMask");
 
   // Phase 1 (0–35%): OROBRICK mask text scales up → cutout grows → video revealed
+  // Start size is responsive: ~12% of viewport width so full word fits on mobile
+  const vw = window.innerWidth;
+  const startSize = Math.max(60, Math.min(vw * 0.12, 180));
+  const endSize = Math.max(800, vw * 1.8);
   if (maskTextEl) {
+    maskTextEl.setAttribute("font-size", startSize);
     tl.fromTo(maskTextEl,
-      { attr: { "font-size": 180 } },
-      { attr: { "font-size": 2800 }, duration: ZOOM_PHASE, ease: "power1.inOut" },
+      { attr: { "font-size": startSize } },
+      { attr: { "font-size": endSize }, duration: ZOOM_PHASE, ease: "power1.inOut" },
       0.0
     );
   }
