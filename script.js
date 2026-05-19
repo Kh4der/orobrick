@@ -59,9 +59,10 @@ setTimeout(finishLoader, 1500);
    3. Lenis smooth scroll
    --------------------------------------------------------- */
 let lenis = new Lenis({
-  lerp: 0.03,          // Ultra-soft inertia — scroll glides like silk
+  lerp: 0.025,          // Extremely soft — scroll coasts like ice
   smoothWheel: true,
-  wheelMultiplier: 0.65, // Slower per tick — finer control over video
+  wheelMultiplier: 0.55, // Fine-grained control per tick
+  touchMultiplier: 1.5,
 });
 
 // Sync Lenis with GSAP ScrollTrigger for buttery smooth pinned sections
@@ -160,7 +161,6 @@ if (heroCanvas) {
 let targetProgress = 0;   // set by ScrollTrigger
 let currentProgress = 0;  // lerped toward target each rAF
 let lastDrawnProgress = 0;
-const FRAME_LERP = 0.055; // smooth glide — responsive but no chop
 
 function drawCoverFrame(ctx, source, canvas) {
   const cw = canvas.width;
@@ -195,13 +195,16 @@ function renderFrame(p) {
   }
 }
 
-// rAF loop: smoothly interpolate toward the scroll-driven target
+// rAF loop: smoothly interpolate toward the scroll-driven target.
+// Uses adaptive lerp — small gaps glide slowly (cinematic), large
+// gaps catch up faster (responsive). Feels like a heavy flywheel.
 function frameLoop() {
-  // Lerp current toward target
   const diff = targetProgress - currentProgress;
-  if (Math.abs(diff) > 0.0001) {
-    currentProgress += diff * FRAME_LERP;
-    // Clamp
+  const absDiff = Math.abs(diff);
+  if (absDiff > 0.00005) {
+    // Adaptive: slow when close (0.03), faster when far (0.09)
+    const lerp = 0.03 + Math.min(absDiff * 2.0, 0.06);
+    currentProgress += diff * lerp;
     currentProgress = Math.max(0, Math.min(1, currentProgress));
     renderFrame(currentProgress);
     lastDrawnProgress = currentProgress;
@@ -336,7 +339,7 @@ if (!reduceMotion) {
       end: "+=500%",
       pin: true,
       pinSpacing: true,
-      scrub: 1.2,
+      scrub: 1.8,
       anticipatePin: 1,
       onUpdate: (self) => {
         const p = self.progress;
