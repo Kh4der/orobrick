@@ -59,9 +59,9 @@ setTimeout(finishLoader, 1500);
    3. Lenis smooth scroll
    --------------------------------------------------------- */
 let lenis = new Lenis({
-  lerp: 0.025,          // Extremely soft — scroll coasts like ice
+  lerp: 0.07,           // Responsive but smooth
   smoothWheel: true,
-  wheelMultiplier: 0.55, // Fine-grained control per tick
+  wheelMultiplier: 0.7,
   touchMultiplier: 1.5,
 });
 
@@ -158,8 +158,6 @@ if (heroCanvas) {
    *current* progress toward it every frame, so the video glides
    smoothly even when scroll jumps several frames at once.
    Crossfade between adjacent frames eliminates hard cuts. */
-let targetProgress = 0;   // set by ScrollTrigger
-let currentProgress = 0;  // lerped toward target each rAF
 let lastDrawnProgress = 0;
 
 function drawCoverFrame(ctx, source, canvas) {
@@ -195,33 +193,15 @@ function renderFrame(p) {
   }
 }
 
-// rAF loop: smoothly interpolate toward the scroll-driven target.
-// Uses adaptive lerp — small gaps glide slowly (cinematic), large
-// gaps catch up faster (responsive). Feels like a heavy flywheel.
-function frameLoop() {
-  const diff = targetProgress - currentProgress;
-  const absDiff = Math.abs(diff);
-  if (absDiff > 0.00005) {
-    // Adaptive: slow when close (0.03), faster when far (0.09)
-    const lerp = 0.03 + Math.min(absDiff * 2.0, 0.06);
-    currentProgress += diff * lerp;
-    currentProgress = Math.max(0, Math.min(1, currentProgress));
-    renderFrame(currentProgress);
-    lastDrawnProgress = currentProgress;
-  }
-  requestAnimationFrame(frameLoop);
-}
-requestAnimationFrame(frameLoop);
-
-// Public: called by ScrollTrigger to set the target
+// Called directly by GSAP ScrollTrigger's onUpdate.
+// GSAP scrub already smooths the progress value — no extra lerp needed.
+// The crossfade between adjacent frames handles inter-frame smoothness.
 function drawFrameAtProgress(p) {
-  targetProgress = p;
-  // Also render immediately on first call so canvas isn't blank
-  if (!lastDrawnProgress && extractedFrames.length) {
-    currentProgress = p;
-    renderFrame(p);
-    lastDrawnProgress = p;
-  }
+  if (!frameCanvasCtx || !heroCanvas || !extractedFrames.length) return;
+  // Avoid redundant redraws for the same position
+  if (Math.abs(p - lastDrawnProgress) < 0.0001) return;
+  lastDrawnProgress = p;
+  renderFrame(p);
 }
 
 async function extractFrames() {
@@ -339,7 +319,7 @@ if (!reduceMotion) {
       end: "+=500%",
       pin: true,
       pinSpacing: true,
-      scrub: 1.8,
+      scrub: 2.5,
       anticipatePin: 1,
       onUpdate: (self) => {
         const p = self.progress;
