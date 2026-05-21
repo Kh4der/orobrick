@@ -252,9 +252,18 @@ export function initBgFluid(opts = {}) {
     }
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    requestAnimationFrame(render);
+    rafId = requestAnimationFrame(render);
   }
-  render();
+  let rafId = requestAnimationFrame(render);
+  // Pause when tab hidden so we don't drain battery off-screen.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+    } else if (!rafId) {
+      rafId = requestAnimationFrame(render);
+    }
+  });
 
   return { canvas, gl, stages };
 }

@@ -15,7 +15,7 @@
   /* Ink */
   --ink:        #1f1c1a;
   --ink-soft:   #4a423b;
-  --ink-mute:   #877a6a;
+  --ink-mute:   #6a5d4f;
   --ink-line:   rgba(31, 28, 26, 0.12);
 
   /* Accents */
@@ -485,6 +485,7 @@ ul { list-style: none; }
 .hero {
   position: relative;
   height: 100vh;
+  height: 100svh;
   min-height: 720px;
   overflow: hidden;
   background: transparent; /* WebGL fluid bg shows through during OROBRICK intro */
@@ -1509,7 +1510,8 @@ a.contact-chip:hover {
 .field input:focus,
 .field textarea:focus,
 .field select:focus {
-  outline: none;
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
   border-color: var(--gold);
   background: #fff;
 }
@@ -1796,7 +1798,13 @@ a.contact-chip:hover {
   .contact-form { padding: 1rem; }
   .contact-form .field input,
   .contact-form .field textarea,
-  .contact-form .field select { padding: 0.8rem 0.9rem; font-size: 0.95rem; }
+  .contact-form .field select {
+    padding: 0.8rem 0.9rem;
+    /* Keep min 16px so iOS Safari does NOT auto-zoom on focus.
+       0.95rem on a 16px-root html is 15.2px — small enough to trigger
+       the zoom and disrupt the layout. */
+    font-size: 16px;
+  }
 }
 
 /* =========================================================
@@ -2020,7 +2028,7 @@ a.contact-chip:hover {
     font-size: 0.72rem;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: rgba(31, 28, 26, 0.55);
+    color: rgba(31, 28, 26, 0.78);
     margin: 0 0 0.7rem 0;
   }
   .mobile-lang-row {

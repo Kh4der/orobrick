@@ -100,7 +100,22 @@ ScrollTrigger.create({
   onUpdate: (self) => nav.classList.toggle("is-solid", self.scroll() > 80),
 });
 
-navToggle?.addEventListener("click", () => navLinks.classList.toggle("is-open"));
+// Burger toggle — open/close the mobile menu, sync aria-expanded for SR,
+// and close on Esc. Tap targets and visible focus are handled in CSS.
+function setNavOpen(open) {
+  if (!navLinks || !navToggle) return;
+  navLinks.classList.toggle("is-open", open);
+  navToggle.setAttribute("aria-expanded", String(open));
+}
+navToggle?.addEventListener("click", () => {
+  setNavOpen(!navLinks.classList.contains("is-open"));
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && navLinks?.classList.contains("is-open")) {
+    setNavOpen(false);
+    navToggle?.focus();
+  }
+});
 
 /* ---------------------------------------------------------
    5. Hero — scroll-scrubbed video with smooth zoom-in
@@ -219,16 +234,41 @@ async function extractFrames() {
         return;
       }
 
-      // Capture at full native resolution for sharp quality
-      const CAP_W = heroVideo.videoWidth;
-      const CAP_H = heroVideo.videoHeight;
+      // Capture downsampled to avoid OOM on mobile/mid-tier laptops.
+      // Full 1080p × ~750 frames as ImageBitmaps is ~5-7 GB GPU/RAM.
+      // 1280px wide gives crisp results at any reasonable scrub size
+      // while keeping the bitmap pool under ~1 GB.
+      const MAX_CAP_W = 1280;
+      const nativeW = heroVideo.videoWidth || 1920;
+      const nativeH = heroVideo.videoHeight || 1080;
+      const capScale = nativeW > MAX_CAP_W ? MAX_CAP_W / nativeW : 1;
+      const CAP_W = Math.floor(nativeW * capScale);
+      const CAP_H = Math.floor(nativeH * capScale);
       const captureCanvas = document.createElement("canvas");
       captureCanvas.width = CAP_W;
       captureCanvas.height = CAP_H;
       const capCtx = captureCanvas.getContext("2d", { alpha: false });
 
+      // Safety timeout: if `ended` never fires (autoplay blocked, throttled
+      // tab, codec hiccup) the promise would hang forever and the hero
+      // canvas would stay blank. After 10s, finalize with whatever frames
+      // we have so the scrub at least falls back gracefully.
+      let finalized = false;
+      function finalize() {
+        if (finalized) return;
+        finalized = true;
+        framesReady = true;
+        drawFrameAtProgress(0);
+        console.log(`[Orobrick] Captured ${extractedFrames.length} frames at ${CAP_W}x${CAP_H}`);
+        resolve();
+      }
+      const HARD_TIMEOUT_MS = 10000;
+      setTimeout(() => {
+        if (!finalized && extractedFrames.length > 0) finalize();
+      }, HARD_TIMEOUT_MS);
+
       function captureFrame() {
-        capCtx.drawImage(heroVideo, 0, 0);
+        capCtx.drawImage(heroVideo, 0, 0, CAP_W, CAP_H);
         if (typeof createImageBitmap === "function") {
           createImageBitmap(captureCanvas).then((bmp) => {
             extractedFrames.push(bmp);
@@ -259,10 +299,7 @@ async function extractFrames() {
         heroVideo.addEventListener("ended", () => {
           captureFrame();
           heroVideo.pause();
-          framesReady = true;
-          drawFrameAtProgress(0);
-          console.log(`[Orobrick] Captured ${extractedFrames.length} frames at ${CAP_W}x${CAP_H}`);
-          resolve();
+          finalize();
         }, { once: true });
 
       } else {
@@ -273,9 +310,7 @@ async function extractFrames() {
 
         function seekNext() {
           if (i >= totalFrames) {
-            framesReady = true;
-            drawFrameAtProgress(0);
-            resolve();
+            finalize();
             return;
           }
           heroVideo.currentTime = (i / totalFrames) * dur;
@@ -913,11 +948,15 @@ if (themedSections.length && !reduceMotion) {
     });
 
     // --- Horizontal scroll (trackpad / shift+wheel) ---
+    // Only intercept when horizontal intent dominates; otherwise let the
+    // page scroll vertically. Mobile users finger-scrolling vertically
+    // over the carousel were previously trapped because we hijacked
+    // every wheel event.
     track.addEventListener("wheel", (e) => {
-      // Use deltaX for horizontal, deltaY for vertical scroll → map to horizontal
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      velocity -= delta * 0.4;
-      e.preventDefault();
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        velocity -= e.deltaX * 0.4;
+        e.preventDefault();
+      }
     }, { passive: false });
 
     // Prevent links/clicks from firing after a drag
@@ -1046,9 +1085,13 @@ if (isFinePointer && !reduceMotion) {
     });
   }
 
+  // i18n dictionary version — bump when JSON content changes so returning
+  // visitors get the fresh strings. Cached with `default` so HTTP cache
+  // headers and ETag revalidation still work.
+  const I18N_VERSION = 2;
   async function loadDict(lang) {
     if (dictCache[lang]) return dictCache[lang];
-    const res = await fetch(`i18n/${lang}.json`, { cache: "force-cache" });
+    const res = await fetch(`i18n/${lang}.json?v=${I18N_VERSION}`);
     if (!res.ok) throw new Error(`Failed to load i18n/${lang}.json`);
     const dict = await res.json();
     dictCache[lang] = dict;
@@ -1107,16 +1150,33 @@ if (isFinePointer && !reduceMotion) {
     // dictionary write hits whole text nodes, not per-char spans.
     flattenSplitting();
 
+    let dictApplied = false;
     try {
       const dict = await loadDict(lang);
       applyDict(dict);
+      dictApplied = true;
     } catch (err) {
-      console.warn("[Orobrick i18n]", err);
+      console.warn("[Orobrick i18n] dict load failed, reverting to English", err);
+      // Recovery: if we can't load the chosen language, paint EN state
+      // so the user isn't stuck with dir=rtl on untranslated text.
+      if (lang !== "en") {
+        paintActive("en");
+        writeSaved("en");
+        lang = "en";
+      }
     }
 
     // Restore per-char reveal animations only for English.
     if (lang === "en") {
       setTimeout(reSplit, 50);
+    }
+
+    // Text length changed → ScrollTrigger pin spacers are stale.
+    // Refresh so anchor scrolls land at the right positions.
+    if (dictApplied && typeof ScrollTrigger !== "undefined") {
+      setTimeout(() => {
+        try { ScrollTrigger.refresh(); } catch (_) {}
+      }, 80);
     }
   }
 
